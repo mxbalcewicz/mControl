@@ -10,6 +10,7 @@ import auth from '@react-native-firebase/auth';
 import LoginScreen from '../screens/LoginScreen';
 import HomeScreen from '../screens/HomeScreen';
 import RegisterScreen from '../screens/RegisterScreen';
+import UnauthicatedScreen from '../screens/UnauthicatedScreen';
 
 const Drawer = createDrawerNavigator();
 
@@ -29,12 +30,13 @@ export default App = () => {
 
   if (!user) {
     return (
-      <NavigationContainer>
-        <Drawer.Navigator initialRouteName="Home">
-          <Drawer.Screen name="Register" component={RegisterScreen} />
-          <Drawer.Screen name="Login" component={LoginScreen} />
-        </Drawer.Navigator>
-      </NavigationContainer>
+      <UnauthicatedScreen />
+      // <NavigationContainer>
+      //   <Drawer.Navigator initialRouteName="Home">
+      //     <Drawer.Screen name="Register" component={RegisterScreen} />
+      //     <Drawer.Screen name="Login" component={LoginScreen} />
+      //   </Drawer.Navigator>
+      // </NavigationContainer>
     );
   }
 
@@ -42,7 +44,6 @@ export default App = () => {
     <NavigationContainer>
       <Drawer.Navigator initialRouteName="Home">
         <Drawer.Screen name="Home" component={HomeScreen} />
-        <Drawer.Screen name="Siema" component={LoginScreen} />
       </Drawer.Navigator>
     </NavigationContainer>
   );
