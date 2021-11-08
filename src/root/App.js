@@ -31,12 +31,6 @@ export default App = () => {
   if (!user) {
     return (
       <UnauthicatedScreen />
-      // <NavigationContainer>
-      //   <Drawer.Navigator initialRouteName="Home">
-      //     <Drawer.Screen name="Register" component={RegisterScreen} />
-      //     <Drawer.Screen name="Login" component={LoginScreen} />
-      //   </Drawer.Navigator>
-      // </NavigationContainer>
     );
   }
 

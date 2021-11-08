@@ -10,7 +10,7 @@ import {
   Alert,
 } from 'react-native';
 import auth from '@react-native-firebase/auth';
-
+import admob, { BannerAd, BannerAdSize, TestIds } from '@react-native-firebase/admob';
 
 const LoginScreen = ({navigation}) => {
   const [email, setEmail] = useState('');
