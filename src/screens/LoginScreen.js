@@ -4,11 +4,11 @@ import {
   Text,
   View,
   TextInput,
-  Button,
-  TouchableHighlight,
+  TouchableOpacity,
   Image,
-  Alert,
+  Button
 } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import auth from '@react-native-firebase/auth';
 import admob, { BannerAd, BannerAdSize, TestIds } from '@react-native-firebase/admob';
 
@@ -34,94 +34,100 @@ const LoginScreen = ({navigation}) => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.inputs}
-          placeholder="Email"
-          keyboardType="email-address"
-          underlineColorAndroid="transparent"
-          onChangeText={email => setEmail(email)}
-        />
-      </View>
-
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.inputs}
-          placeholder="Password"
-          secureTextEntry={true}
-          underlineColorAndroid="transparent"
-          onChangeText={password => setPassword(password)}
-        />
-      </View>
-
-      <TouchableHighlight
-        style={[styles.buttonContainer, styles.loginButton]}
-        onPress={loginUser}>
-        <Text style={styles.loginText}>Login</Text>
-      </TouchableHighlight>
-
-      <TouchableHighlight
-        style={[styles.buttonContainer, styles.loginButton]}
-        onPress={() => this.onClickListener('restore_password')}>
-        <Text style={styles.loginText}>Forgot your password?</Text>
-      </TouchableHighlight>
-
-      {/* <TouchableHighlight style={[styles.buttonContainer, styles.loginButton]} onPress={() => navigation.navigate('Login')}>
-                <Text style={styles.loginText}>Go to register screen</Text>
-            </TouchableHighlight> */}
-      <Button
-        title="Go to register screen"
-        onPress={() => navigation.navigate('Register')}
-      />
-    </View>
+            <KeyboardAwareScrollView
+                style={{ flex: 1, width: '100%' }}
+                keyboardShouldPersistTaps="always">
+                <Image
+                    style={styles.logo}
+                    source={require('../assets/union.png')}
+                />
+                <TextInput
+                    style={styles.input}
+                    placeholder='E-mail'
+                    placeholderTextColor="#aaaaaa"
+                    onChangeText={(text) => setEmail(text)}
+                    value={email}
+                    underlineColorAndroid="transparent"
+                    autoCapitalize="none"
+                />
+                <TextInput
+                    style={styles.input}
+                    placeholderTextColor="#aaaaaa"
+                    secureTextEntry
+                    placeholder='Password'
+                    onChangeText={(text) => setPassword(text)}
+                    value={password}
+                    underlineColorAndroid="transparent"
+                    autoCapitalize="none"
+                />
+                <TouchableOpacity
+                    style={styles.button}
+                    onPress={loginUser}>
+                    <Text style={styles.buttonTitle}>Log in</Text>
+                </TouchableOpacity>
+                <View style={styles.footerView}>
+                    <Text style={styles.footerText}>Don't have an account? <Text onPress={() => navigation.navigate('Register')} style={styles.footerLink}>Sign up</Text></Text>
+                </View>
+            </KeyboardAwareScrollView>
+        </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#DCDCDC',
+      flex: 1,
+      alignItems: 'center'
   },
-  inputContainer: {
-    borderBottomColor: '#F5FCFF',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 30,
-    borderBottomWidth: 1,
-    width: 250,
-    height: 45,
-    marginBottom: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
+  title: {
+
   },
-  inputs: {
-    height: 45,
-    marginLeft: 16,
-    borderBottomColor: '#FFFFFF',
-    flex: 1,
+  logo: {
+      flex: 1,
+      height: 120,
+      width: 90,
+      alignSelf: "center",
+      margin: 30
   },
-  inputIcon: {
-    width: 30,
-    height: 30,
-    marginLeft: 15,
-    justifyContent: 'center',
+  input: {
+      height: 48,
+      borderRadius: 5,
+      overflow: 'hidden',
+      backgroundColor: 'white',
+      marginTop: 10,
+      marginBottom: 10,
+      marginLeft: 30,
+      marginRight: 30,
+      paddingLeft: 16
   },
-  buttonContainer: {
-    height: 45,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 20,
-    width: 250,
-    borderRadius: 30,
+  button: {
+      backgroundColor: '#788eec',
+      marginLeft: 30,
+      marginRight: 30,
+      marginTop: 20,
+      height: 48,
+      borderRadius: 5,
+      alignItems: "center",
+      justifyContent: 'center'
   },
-  loginButton: {
-    backgroundColor: '#00b5ec',
+  buttonTitle: {
+      color: 'white',
+      fontSize: 16,
+      fontWeight: "bold"
   },
-  loginText: {
-    color: 'white',
+  footerView: {
+      flex: 1,
+      alignItems: "center",
+      marginTop: 20
   },
+  footerText: {
+      fontSize: 16,
+      color: '#2e2e2d'
+  },
+  footerLink: {
+      color: "#788eec",
+      fontWeight: "bold",
+      fontSize: 16
+  }
 });
 
 export default LoginScreen;

@@ -1,18 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
-  Text,
-  View
 } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
-import { createDrawerNavigator } from '@react-navigation/drawer';
 import auth from '@react-native-firebase/auth';
-import LoginScreen from '../screens/LoginScreen';
 import HomeScreen from '../screens/HomeScreen';
-import RegisterScreen from '../screens/RegisterScreen';
 import UnauthicatedScreen from '../screens/UnauthicatedScreen';
-
-const Drawer = createDrawerNavigator();
+import AuthenticatedScreen from '../screens/AuthenticatedScreen';
 
 export default App = () => {
   const [initializing, setInitializing] = useState(true);
@@ -35,11 +29,7 @@ export default App = () => {
   }
 
   return (
-    <NavigationContainer>
-      <Drawer.Navigator initialRouteName="Home">
-        <Drawer.Screen name="Home" component={HomeScreen} />
-      </Drawer.Navigator>
-    </NavigationContainer>
+    <AuthenticatedScreen />
   );
 }
 
