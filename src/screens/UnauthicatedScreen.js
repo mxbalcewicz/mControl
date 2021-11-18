@@ -4,6 +4,8 @@ import {createStackNavigator} from '@react-navigation/stack';
 import LoginScreen from './LoginScreen';
 import RegisterScreen from './RegisterScreen';
 import {NavigationContainer} from '@react-navigation/native';
+import firestore from '@react-native-firebase/firestore';
+import { Ionicons } from 'react-native-vector-icons';
 
 const Stack = createStackNavigator();
 

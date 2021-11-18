@@ -21,15 +21,10 @@ const LoginScreen = ({navigation}) => {
       .signInWithEmailAndPassword(email, password)
       .then(res => {
         console.log(res);
+        console.log(auth().currentUser.uid);
         console.log('User logged-in successfully!');
-        this.setState({
-          isLoading: false,
-          email: '',
-          password: '',
-        });
-        this.props.navigation.navigate('Dashboard');
       })
-      .catch(error => this.setState({errorMessage: error.message}));
+      .catch(error => console.log({errorMessage: error.message}));
   };
 
   return (
