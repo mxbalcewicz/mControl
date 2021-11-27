@@ -1,14 +1,12 @@
 import React, {useState, useEffect} from 'react';
-import {View, Text} from 'react-native';
 import {createStackNavigator} from '@react-navigation/stack';
 import LoginScreen from './LoginScreen';
 import RegisterScreen from './RegisterScreen';
 import {NavigationContainer} from '@react-navigation/native';
-import firestore from '@react-native-firebase/firestore';
 
 const Stack = createStackNavigator();
 
-const UnauthicatedScreen = () => {
+const UnauthenticatedScreen = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator>
@@ -19,4 +17,4 @@ const UnauthicatedScreen = () => {
   );
 };
 
-export default UnauthicatedScreen;
+export default UnauthenticatedScreen;

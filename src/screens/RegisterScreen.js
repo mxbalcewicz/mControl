@@ -1,4 +1,4 @@
-import React, {Component, useState} from 'react';
+import React, { Component, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -9,9 +9,11 @@ import {
 } from 'react-native';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
-const RegisterScreen = ({navigation}) => {
+const RegisterScreen = ({ navigation }) => {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -28,9 +30,8 @@ const RegisterScreen = ({navigation}) => {
         firestore()
           .collection('users').doc(user.uid)
           .set({
-            name: "",
-            surname: "",
-            bio: "",
+            name: name,
+            description: "",
             currency: "PLN",
             balance_plus: 0,
             balance_minus: 0,
@@ -56,9 +57,22 @@ const RegisterScreen = ({navigation}) => {
   return (
     <View style={styles.container}>
       <KeyboardAwareScrollView
-        style={{flex: 1, width: '100%'}}
+        style={{ flex: 1, width: '100%' }}
         keyboardShouldPersistTaps="always">
-        <Image style={styles.logo} source={require('../assets/union.png')} />
+
+        <View style={styles.iconView}>
+          <Icon name="attach-money" size={180} color="black" />
+        </View>
+
+        <TextInput
+          style={styles.input}
+          placeholder="Name"
+          placeholderTextColor="#aaaaaa"
+          onChangeText={text => setName(text)}
+          value={name}
+          underlineColorAndroid="transparent"
+          autoCapitalize="none"
+        />
         <TextInput
           style={styles.input}
           placeholder="E-mail"
@@ -151,6 +165,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
   },
+  iconView: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,
+}
 });
 
 export default RegisterScreen;
