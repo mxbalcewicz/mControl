@@ -15,71 +15,80 @@ import firestore from '@react-native-firebase/firestore';
 import { Avatar } from 'react-native-elements';
 // TODO Google AdMob integration @rnfirebase/admob / admob-alpha
 import Icon from 'react-native-vector-icons/Ionicons';
-
+import TransactionItem from '../components/TransactionItem';
 
 const HomeScreen = ({ navigation }) => {
+  //Home avatar and displayed name states
   const [name, setName] = useState();
   const [email, setEmail] = useState();
+
   const [modalVisible, setModalVisible] = useState(false);
+
+  //Modal input states
   const [transactionAmount, setTransactionAmount] = useState(null);
   const [transactionName, setTransactionName] = useState(null);
   const [transactionType, setTransactionType] = useState("INCOMING");
-  const [plusTransactions, setPlusTransactions] = useState();
-  const [minusTransactions, setMinusTransactions] = useState();
+
+  // Collections of incoming and outgoing transactions
+  const [incomingTransactions, setIncomingTransactions] = useState([]);
+  const [outgoingTransactions, setOutgoingTransactions] = useState([]);
+
+  //Sum of transactions states
   const [balanceIncoming, setBalanceIncoming] = useState();
   const [balanceOutgoing, setBalanceOutgoing] = useState();
   const [balanceSummary, setBalanceSummary] = useState();
-  const [currentBalance, setCurrentBalance] = useState();
 
   const handleValueChange = (itemValue, itemIndex) => {
     setTransactionType(itemValue);
     console.log(itemValue);
   }
 
-  const updateDataFromFirestore = () => {
-    console.log('UPDATE DATA');
+  const showStates = () => {
+    console.log('STARTplusTransactions');
+    incomingTransactions.forEach(item => console.log(item));
+    console.log('ENDplusTransactions');
+  };
+
+  const updateDataFromFirestore = async () => {
     let addSum = 0;
     let subtractSum = 0;
     const user = auth().currentUser;
     const emailPart = String(user.email).split("@")[0];
     setEmail(emailPart);
-    firestore().collection('users').doc(user.uid).get()
-      .then(
-        documentSnapshot => {
-          console.log(documentSnapshot.data());
-          setName(documentSnapshot.data()["name"]);
-        }
-      );
 
-    firestore().collection('balance_add').get()
-      .then(
-        documentSnapshot => {
-          documentSnapshot.forEach(snap => {
-            if (snap.data()["uid"] == user.uid) {
-              addSum += snap.data()["amount"];
-            }
-          });
-          setBalanceIncoming(addSum);
-        }
-      );
-    firestore().collection('balance_subtract').get()
-      .then(
-        documentSnapshot => {
-          documentSnapshot.forEach(snap => {
-            if (snap.data()["uid"] == user.uid) {
-              subtractSum += snap.data()["amount"];
-            }
-          });
-          setBalanceOutgoing(subtractSum);
-        }
-      );
-      //BALANCE UPDATE SUMMARY
+    //Displayed name in title
+    const userCollection = firestore().collection('users');
+    userCollection.doc(user.uid).get().then(
+      documentSnapshot => {
+        setName(documentSnapshot.data()["name"]);
+      }
+    );
+
+    const incomingTransactionsCollection = firestore().collection('balance_add');
+    const outgoingTransactionsCollection = firestore().collection('balance_subtract');
+    const incomingTransactionsData = await incomingTransactionsCollection.get();
+    const outgoingTransactionsData = await outgoingTransactionsCollection.get();
+
+    incomingTransactionsData.docs.forEach(item => {
+      if (item.data()["uid"] == user.uid) {
+        //console.log(item.id);
+        addSum += item.data()["amount"];
+        setIncomingTransactions(incomingTransactions => [...incomingTransactions, item.data()]);
+      }
+    })
+    setBalanceIncoming(addSum);
+
+    outgoingTransactionsData.docs.forEach(item => {
+      if (item.data()["uid"] == user.uid) {
+        subtractSum += item.data()["amount"];
+        setOutgoingTransactions(outgoingTransactions => [...outgoingTransactions, item.data()]);
+      }
+    })
+    setBalanceOutgoing(subtractSum);
+    setBalanceSummary(addSum - subtractSum);
   };
 
-  useEffect(updateDataFromFirestore, []);
-
   const addNewTransaction = () => {
-    console.log(transactionType);
     const user = auth().currentUser;
     const timestamp = firestore.FieldValue.serverTimestamp();
     if (transactionType == "INCOMING") {
@@ -104,7 +113,7 @@ const HomeScreen = ({ navigation }) => {
     }
   };
 
-
+  useEffect(() => {updateDataFromFirestore();}, []);
 
   return (
     <View style={styles.wrapper}>
@@ -123,27 +132,29 @@ const HomeScreen = ({ navigation }) => {
 
         <View style={styles.wrapper}>
           <View style={styles.titleWrapper}>
-            <Text style={styles.title}>Hello {name}!</Text>
+            <Text style={styles.title}>{name}'s finances:</Text>
           </View>
           <View style={styles.balanceWrapper}>
-            <Text>Balance incoming: {balanceIncoming}</Text>
-            <Text>Balance outgoing: {balanceOutgoing}</Text>
-            <Text>Balance summary: {currentBalance}</Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: "center" }}>
+              <View style={{ flex: 2, alignItems: 'flex-start', paddingLeft: 20 }}>
+                <Text style={styles.balanceText}>Balance incoming</Text>
+                <Text style={styles.balanceText}>Balance outgoing</Text>
+                <Text style={styles.balanceText}>Balance summary</Text>
+              </View>
+              <View style={{ flex: 1, alignItems: "flex-start", alignItems: "center" }}>
+                <Text style={styles.balanceText}>{balanceIncoming}</Text>
+                <Text style={styles.balanceText}>{balanceOutgoing}</Text>
+                <Text style={styles.balanceText}>{balanceSummary}</Text>
+              </View>
+            </View>
+
           </View>
         </View>
       </View>
 
       <SafeAreaView style={styles.contentView}>
         <ScrollView>
-          <Text>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
-            minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-            aliquip ex ea commodo consequat. Duis aute irure dolor in
-            reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-            pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-            culpa qui officia deserunt mollit anim id est laborum.
-          </Text>
+          {/* scroll view items */}
         </ScrollView>
       </SafeAreaView>
 
@@ -207,7 +218,7 @@ const HomeScreen = ({ navigation }) => {
       </Modal>
 
       <View style={styles.addButtonView}>
-        <TouchableOpacity onPress={() => setModalVisible(!modalVisible)}>
+        <TouchableOpacity onPress={showStates}>
           <Icon name="add-circle-outline" size={60} color="black" />
         </TouchableOpacity>
       </View>
@@ -219,37 +230,42 @@ const HomeScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
-    borderWidth: 1,
-    borderColor: 'black'
   },
   bannerView: {
     flex: 1,
     padding: 10,
+    margin: 5,
     flexDirection: 'row',
     alignItems: "center",
     borderRadius: 30,
     marginTop: 5,
     backgroundColor: '#68a0cf',
-  },
-  avatarView: {
-    borderWidth: 1,
-    borderColor: 'black',
+    shadowOffset: { width: 20, height: 20 },
+    shadowColor: 'black',
+    shadowOpacity: 1,
+    elevation: 15,
   },
   titleWrapper: {
     flex: 1,
     textAlign: "center",
     justifyContent: "center",
-    borderWidth: 1,
-    borderColor: 'black',
     alignSelf: 'stretch'
   },
   title: {
-    textAlign:'center',
-    alignSelf:'center',
+    textAlign: 'center',
+    alignSelf: 'center',
+    fontSize: 19,
+    fontWeight: '600',
+    color: "white"
   },
   balanceWrapper: {
     flex: 3,
     justifyContent: "center",
+    alignItems: "center",
+  },
+  balanceText: {
+    fontSize: 18,
+    fontWeight: '500',
   },
   contentView: {
     flex: 4,
