@@ -1,13 +1,10 @@
-import React, { Component, useState } from 'react';
+import React, { useState } from 'react';
 import {
     StyleSheet,
     Text,
     View,
     TextInput,
     TouchableOpacity,
-    Image,
-    Button,
-    Alert
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import auth from '@react-native-firebase/auth';

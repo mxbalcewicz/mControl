@@ -1,21 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, Button, TextInput, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity } from 'react-native';
 import auth from '@react-native-firebase/auth';
-import { Input } from 'react-native-elements';
 import { Picker } from '@react-native-picker/picker';
 import firestore from '@react-native-firebase/firestore';
-
 
 const SettingsScreen = () => {
   const [selectedCurrency, setSelectedCurrency] = useState();
   const [userData, setUserData] = useState();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  const showStateData = () => {
-    console.log(userData["name"]);
-  };
 
   const updateUserData = () => {
     const user = auth().currentUser;

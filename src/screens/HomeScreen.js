@@ -36,8 +36,7 @@ const HomeScreen = ({ navigation }) => {
   const [transactions, setTransactions] = useState([]);
 
   // TestID for banner or GoogleAdmobID
-  const adUnitId = __DEV__ ? TestIds.BANNER : 'ca-app-pub-9984594795986752/5137656974';
-  const prodUnitId = 'ca-app-pub-9984594795986752/5137656974';
+  const adUnitId = "ca-app-pub-3940256099942544/6300978111";
 
   //Sum of transactions states
   const [balanceIncoming, setBalanceIncoming] = useState();
@@ -46,12 +45,7 @@ const HomeScreen = ({ navigation }) => {
 
   const handleValueChange = (itemValue, itemIndex) => {
     setTransactionType(itemValue);
-    console.log(itemValue);
   }
-
-  const showStates = () => {
-    transactions.forEach(item => console.log(item["name"]));
-  };
 
   const updateDataFromFirestore = async () => {
     setTransactions([]);
@@ -164,7 +158,7 @@ const HomeScreen = ({ navigation }) => {
             return (data.index % 10 == 0) ? <View>
               <TransactionItem id={data["item"]["id"]} name={data["item"]["name"]} amount={data["item"]["amount"]} currency={currency} transactionType={data["item"]["type"]} updateFn={() => updateDataFromFirestore()} />
               <BannerAd
-                unitId={"ca-app-pub-3940256099942544/6300978111"}
+                unitId={adUnitId}
                 size={BannerAdSize.FULL_BANNER}
                 requestOptions={{
                   requestNonPersonalizedAdsOnly: true,
