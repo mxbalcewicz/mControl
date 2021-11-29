@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   Modal,
-  ScrollView,
   SafeAreaView,
   TextInput,
-  Animated
+  FlatList,
+  Alert
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import auth from '@react-native-firebase/auth';
@@ -34,6 +34,8 @@ const HomeScreen = ({ navigation }) => {
   // Collections of incoming and outgoing transactions
   const [transactions, setTransactions] = useState([]);
 
+  // AdmobAdRef
+  const nativeAdViewRef = useRef();
 
   //Sum of transactions states
   const [balanceIncoming, setBalanceIncoming] = useState();
@@ -50,6 +52,7 @@ const HomeScreen = ({ navigation }) => {
   };
 
   const updateDataFromFirestore = async () => {
+    nativeAdViewRef.current?.loadAd();
     setTransactions([]);
     let sumIncoming = 0;
     let sumOutgoing = 0;
@@ -99,16 +102,21 @@ const HomeScreen = ({ navigation }) => {
   const addNewTransaction = () => {
     const user = auth().currentUser;
     const timestamp = firestore.FieldValue.serverTimestamp();
-    firestore().collection('transactions').doc().set(
-      {
-        amount: parseInt(transactionAmount),
-        name: transactionName,
-        uid: user.uid,
-        timestamp: timestamp,
-        type: transactionType
-      }
-    ).then(updateDataFromFirestore);
 
+    if (transactionAmount == null) {
+      Alert.alert('You need to provide the amount!');
+    }
+    else {
+      firestore().collection('transactions').doc().set(
+        {
+          amount: parseInt(transactionAmount),
+          name: transactionName,
+          uid: user.uid,
+          timestamp: timestamp,
+          type: transactionType
+        }
+      ).then(updateDataFromFirestore);
+    }
   };
 
   useEffect(() => { updateDataFromFirestore(); }, []);
@@ -134,39 +142,29 @@ const HomeScreen = ({ navigation }) => {
           </View>
           <View style={styles.balanceWrapper}>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: "center" }}>
-              <View style={{ flex: 2, alignItems: 'flex-start', paddingLeft: 20 }}>
-                <Text style={styles.balanceText}>Balance incoming</Text>
-                <Text style={styles.balanceText}>Balance outgoing</Text>
-                <Text style={styles.balanceText}>Balance summary</Text>
+              <View style={{ flex: 1, alignItems: 'flex-start', paddingLeft: 20 }}>
+                <Text style={styles.balanceText}>Incoming</Text>
+                <Text style={styles.balanceText}>Outgoing</Text>
+                <Text style={styles.balanceText}>Summary</Text>
               </View>
-              <View style={{ flex: 1, alignItems: "flex-start", alignItems: "center" }}>
-                <Text style={styles.balanceText}>{balanceIncoming}{currency}</Text>
-                <Text style={styles.balanceText}>{balanceOutgoing}{currency}</Text>
-                <Text style={styles.balanceText}>{balanceSummary}{currency}</Text>
+              <View style={{ flex: 2, alignItems: "flex-start", alignItems: "center" }}>
+                <Text style={styles.balanceText}>{balanceIncoming} {currency}</Text>
+                <Text style={styles.balanceText}>{balanceOutgoing} {currency}</Text>
+                <Text style={styles.balanceText}>{balanceSummary} {currency}</Text>
               </View>
             </View>
-
           </View>
         </View>
       </View>
 
       <SafeAreaView style={styles.contentView}>
-        <ScrollView styles={{ borderWidth: 1, borderColor: 'black', width: '100%' }}>
-          {
-            transactions.map(tItem => {
-              //console.log(tItem);
-              return <TransactionItem id={tItem["id"]} name={tItem["name"]} amount={tItem["amount"]} currency={currency} key={tItem["id"]} transactionType={tItem["type"]} updateFn={updateDataFromFirestore}/>
-            })
+        <FlatList
+          data={transactions}
+          renderItem={(data) => {
+            return <TransactionItem id={data["item"]["id"]} name={data["item"]["name"]} amount={data["item"]["amount"]} currency={currency} transactionType={data["item"]["type"]} updateFn={() => updateDataFromFirestore()} />
           }
-        </ScrollView>
-        {/* <FlatList styles={{ borderWidth: 1, borderColor: 'black', width: '100%' }}>
-          {
-            transactions.map(tItem => {
-              //console.log({tItem["id"]});
-              return <TransactionItem id={tItem["id"]} name={tItem["name"]} amount={tItem["amount"]} currency={currency} key={tItem["id"]} transactionType={tItem["type"]}/>
-            })
           }
-        </FlatList> */}
+        />
       </SafeAreaView>
 
       <Modal
@@ -277,7 +275,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   balanceText: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '500',
     color: "white"
   },

@@ -196,7 +196,7 @@ dependencies {
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.0.0"
     // Google admob dependencies
     // implementation 'com.google.android.ads.consent:consent-library:1.0.6'
-    implementation 'com.google.android.gms:play-services-ads:19.7.0'
+    implementation 'com.google.android.gms:play-services-ads:19.6.0'
     
     // Google services Firebase dependencies
     implementation platform('com.google.firebase:firebase-bom:28.4.2')

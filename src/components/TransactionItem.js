@@ -3,25 +3,31 @@ import { View, Text, StyleSheet, Button, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import firestore from '@react-native-firebase/firestore';
 
-const TransactionItem = ({ key, id, name, amount, currency, transactionType, updateFn}) => {
-    
-    const deleteTransaction = ( id ) => {
+const TransactionItem = ({ key, id, name, amount, currency, transactionType, updateFn }) => {
+
+    const deleteTransaction = (id) => {
         firestore().collection('transactions').doc(id).delete().then(console.log('Transaction', id, 'deleted')).then(updateFn);
     }
-    
+
+    const title = (name == null) ? "No title" : name;
+    const sign = (transactionType == "incoming") ? "+" : "-";
+
     return (
         <View style={styles.itemWrapper} key={key}>
             <View style={{ flex: 5 }}>
-                <Text style={styles.itemText}>{name}</Text>
+                <Text style={styles.itemText}>{title}</Text>
             </View>
-            <View style={{ flex: 3 }}>
+            <View style={{ flex: 3, justifyContent: 'center', alignItems: 'center'}}>
                 {
-                    (transactionType == "incoming") ? <Text style={styles.itemText}>+ {amount} {currency}</Text> : <Text style={styles.itemText}>- {amount} {currency}</Text>
+                    <Text style={styles.itemText}>{sign}{amount}</Text>
                 }
+            </View>
+            <View style={{flex: 1}}>
+                <Text>{currency}</Text>
             </View>
             <View style={{ flex: 1 }}>
                 <TouchableOpacity onPress={() => deleteTransaction(id)}>
-                    <Icon name="delete" size={25} color="white"/>
+                    <Icon name="delete" size={25} color="white" />
                 </TouchableOpacity>
             </View>
         </View>
