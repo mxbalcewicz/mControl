@@ -16,6 +16,7 @@ import firestore from '@react-native-firebase/firestore';
 import { Avatar } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/Ionicons';
 import TransactionItem from '../components/TransactionItem';
+import { InterstitialAd, RewardedAd, BannerAd, TestIds, BannerAdSize } from '@react-native-firebase/admob';
 
 
 const HomeScreen = ({ navigation }) => {
@@ -29,13 +30,14 @@ const HomeScreen = ({ navigation }) => {
   //Modal input states
   const [transactionAmount, setTransactionAmount] = useState(null);
   const [transactionName, setTransactionName] = useState(null);
-  const [transactionType, setTransactionType] = useState("incoming");
+  const [transactionType, setTransactionType] = useState("outgoing");
 
   // Collections of incoming and outgoing transactions
   const [transactions, setTransactions] = useState([]);
 
-  // AdmobAdRef
-  const nativeAdViewRef = useRef();
+  // TestID for banner or GoogleAdmobID
+  const adUnitId = __DEV__ ? TestIds.BANNER : 'ca-app-pub-9984594795986752/5137656974';
+  const prodUnitId = 'ca-app-pub-9984594795986752/5137656974';
 
   //Sum of transactions states
   const [balanceIncoming, setBalanceIncoming] = useState();
@@ -52,7 +54,6 @@ const HomeScreen = ({ navigation }) => {
   };
 
   const updateDataFromFirestore = async () => {
-    nativeAdViewRef.current?.loadAd();
     setTransactions([]);
     let sumIncoming = 0;
     let sumOutgoing = 0;
@@ -82,7 +83,6 @@ const HomeScreen = ({ navigation }) => {
           sumOutgoing += item.data()["amount"];
           var transactionData = item.data();
           transactionData["id"] = item.id;
-          console.log(transactionData);
           setTransactions(transactions => [...transactions, transactionData]);
         }
       }
@@ -161,12 +161,20 @@ const HomeScreen = ({ navigation }) => {
         <FlatList
           data={transactions}
           renderItem={(data) => {
-            return <TransactionItem id={data["item"]["id"]} name={data["item"]["name"]} amount={data["item"]["amount"]} currency={currency} transactionType={data["item"]["type"]} updateFn={() => updateDataFromFirestore()} />
-          }
+            return (data.index % 10 == 0) ? <View>
+              <TransactionItem id={data["item"]["id"]} name={data["item"]["name"]} amount={data["item"]["amount"]} currency={currency} transactionType={data["item"]["type"]} updateFn={() => updateDataFromFirestore()} />
+              <BannerAd
+                unitId={"ca-app-pub-3940256099942544/6300978111"}
+                size={BannerAdSize.FULL_BANNER}
+                requestOptions={{
+                  requestNonPersonalizedAdsOnly: true,
+                }}
+              /></View> :
+              <TransactionItem id={data["item"]["id"]} name={data["item"]["name"]} amount={data["item"]["amount"]} currency={currency} transactionType={data["item"]["type"]} updateFn={() => updateDataFromFirestore()} />
+            }
           }
         />
       </SafeAreaView>
-
       <Modal
         animationType="slide"
         transparent={true}
