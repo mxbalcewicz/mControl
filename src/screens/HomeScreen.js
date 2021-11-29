@@ -7,31 +7,33 @@ import {
   Modal,
   ScrollView,
   SafeAreaView,
-  TextInput
+  TextInput,
+  Animated
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import { Avatar } from 'react-native-elements';
-// TODO Google AdMob integration @rnfirebase/admob / admob-alpha
 import Icon from 'react-native-vector-icons/Ionicons';
 import TransactionItem from '../components/TransactionItem';
 
+
 const HomeScreen = ({ navigation }) => {
-  //Home avatar and displayed name states
+  //Home avatar, displayed name and currency states
   const [name, setName] = useState();
   const [email, setEmail] = useState();
+  const [currency, setCurrency] = useState();
 
   const [modalVisible, setModalVisible] = useState(false);
 
   //Modal input states
   const [transactionAmount, setTransactionAmount] = useState(null);
   const [transactionName, setTransactionName] = useState(null);
-  const [transactionType, setTransactionType] = useState("INCOMING");
+  const [transactionType, setTransactionType] = useState("incoming");
 
   // Collections of incoming and outgoing transactions
-  const [incomingTransactions, setIncomingTransactions] = useState([]);
-  const [outgoingTransactions, setOutgoingTransactions] = useState([]);
+  const [transactions, setTransactions] = useState([]);
+
 
   //Sum of transactions states
   const [balanceIncoming, setBalanceIncoming] = useState();
@@ -44,81 +46,77 @@ const HomeScreen = ({ navigation }) => {
   }
 
   const showStates = () => {
-    console.log('STARTplusTransactions');
-    incomingTransactions.forEach(item => console.log(item));
-    console.log('ENDplusTransactions');
+    transactions.forEach(item => console.log(item["name"]));
   };
 
   const updateDataFromFirestore = async () => {
-    let addSum = 0;
-    let subtractSum = 0;
+    setTransactions([]);
+    let sumIncoming = 0;
+    let sumOutgoing = 0;
     const user = auth().currentUser;
     const emailPart = String(user.email).split("@")[0];
     setEmail(emailPart);
 
     //Displayed name in title
     const userCollection = firestore().collection('users');
-    userCollection.doc(user.uid).get().then(
-      documentSnapshot => {
-        setName(documentSnapshot.data()["name"]);
-      }
+    const currentUserData = await userCollection.doc(user.uid).get().then(documentSnapshot => {
+      setName(documentSnapshot.data()["name"]);
+      setCurrency(documentSnapshot.data()["currency"]);
+    }
     );
 
-    const incomingTransactionsCollection = firestore().collection('balance_add');
-    const outgoingTransactionsCollection = firestore().collection('balance_subtract');
-    const incomingTransactionsData = await incomingTransactionsCollection.get();
-    const outgoingTransactionsData = await outgoingTransactionsCollection.get();
+    const transactionsCollection = firestore().collection('transactions').orderBy("timestamp", "desc");
+    const transactionsData = await transactionsCollection.get();
 
-    incomingTransactionsData.docs.forEach(item => {
+    transactionsData.docs.forEach(item => {
       if (item.data()["uid"] == user.uid) {
-        //console.log(item.id);
-        addSum += item.data()["amount"];
-        setIncomingTransactions(incomingTransactions => [...incomingTransactions, item.data()]);
+        if (item.data()["type"] == "incoming") {
+          sumIncoming += item.data()["amount"];
+          var transactionData = item.data();
+          transactionData["id"] = item.id;
+          setTransactions(transactions => [...transactions, transactionData]);
+        } else {
+          sumOutgoing += item.data()["amount"];
+          var transactionData = item.data();
+          transactionData["id"] = item.id;
+          console.log(transactionData);
+          setTransactions(transactions => [...transactions, transactionData]);
+        }
       }
     })
-    setBalanceIncoming(addSum);
+    setBalanceIncoming(sumIncoming);
+    setBalanceOutgoing(sumOutgoing);
+    setBalanceSummary(sumIncoming - sumOutgoing);
 
-    outgoingTransactionsData.docs.forEach(item => {
-      if (item.data()["uid"] == user.uid) {
-        subtractSum += item.data()["amount"];
-        setOutgoingTransactions(outgoingTransactions => [...outgoingTransactions, item.data()]);
-      }
-    })
-    setBalanceOutgoing(subtractSum);
-    setBalanceSummary(addSum - subtractSum);
   };
+
+  const hideClearModal = () => {
+    setModalVisible(!modalVisible);
+    setTransactionAmount(null);
+    setTransactionName(null);
+  }
 
   const addNewTransaction = () => {
     const user = auth().currentUser;
     const timestamp = firestore.FieldValue.serverTimestamp();
-    if (transactionType == "INCOMING") {
-      firestore().collection('balance_add').doc().set(
-        {
-          amount: parseInt(transactionAmount),
-          name: transactionName,
-          uid: user.uid,
-          timestamp: timestamp
-        }
-      ).then(updateDataFromFirestore);
-    }
-    else {
-      firestore().collection('balance_subtract').doc().set(
-        {
-          amount: parseInt(transactionAmount),
-          name: transactionName,
-          uid: user.uid,
-          timestamp: timestamp
-        }
-      ).then(updateDataFromFirestore);
-    }
+    firestore().collection('transactions').doc().set(
+      {
+        amount: parseInt(transactionAmount),
+        name: transactionName,
+        uid: user.uid,
+        timestamp: timestamp,
+        type: transactionType
+      }
+    ).then(updateDataFromFirestore);
+
   };
 
-  useEffect(() => {updateDataFromFirestore();}, []);
+  useEffect(() => { updateDataFromFirestore(); }, []);
 
   return (
     <View style={styles.wrapper}>
       <View elevation={24} style={styles.bannerView}>
-        <View style={styles.avatarView}>
+        <View>
           <Avatar
             rounded
             source={{
@@ -142,9 +140,9 @@ const HomeScreen = ({ navigation }) => {
                 <Text style={styles.balanceText}>Balance summary</Text>
               </View>
               <View style={{ flex: 1, alignItems: "flex-start", alignItems: "center" }}>
-                <Text style={styles.balanceText}>{balanceIncoming}</Text>
-                <Text style={styles.balanceText}>{balanceOutgoing}</Text>
-                <Text style={styles.balanceText}>{balanceSummary}</Text>
+                <Text style={styles.balanceText}>{balanceIncoming}{currency}</Text>
+                <Text style={styles.balanceText}>{balanceOutgoing}{currency}</Text>
+                <Text style={styles.balanceText}>{balanceSummary}{currency}</Text>
               </View>
             </View>
 
@@ -153,9 +151,22 @@ const HomeScreen = ({ navigation }) => {
       </View>
 
       <SafeAreaView style={styles.contentView}>
-        <ScrollView>
-          {/* scroll view items */}
+        <ScrollView styles={{ borderWidth: 1, borderColor: 'black', width: '100%' }}>
+          {
+            transactions.map(tItem => {
+              //console.log(tItem);
+              return <TransactionItem id={tItem["id"]} name={tItem["name"]} amount={tItem["amount"]} currency={currency} key={tItem["id"]} transactionType={tItem["type"]} updateFn={updateDataFromFirestore}/>
+            })
+          }
         </ScrollView>
+        {/* <FlatList styles={{ borderWidth: 1, borderColor: 'black', width: '100%' }}>
+          {
+            transactions.map(tItem => {
+              //console.log({tItem["id"]});
+              return <TransactionItem id={tItem["id"]} name={tItem["name"]} amount={tItem["amount"]} currency={currency} key={tItem["id"]} transactionType={tItem["type"]}/>
+            })
+          }
+        </FlatList> */}
       </SafeAreaView>
 
       <Modal
@@ -195,21 +206,22 @@ const HomeScreen = ({ navigation }) => {
               style={styles.pickerStyles}
               selectedValue={transactionType}
               onValueChange={handleValueChange}>
-              <Picker.Item label="Incoming" value="INCOMING" />
-              <Picker.Item label="Outgoing" value="OUTGOING" />
+              <Picker.Item label="Incoming" value="incoming" />
+              <Picker.Item label="Outgoing" value="outgoing" />
             </Picker>
 
             <TouchableOpacity
               style={styles.button}
-              onPress={addNewTransaction}>
+              onPress={() => {
+                addNewTransaction();
+                hideClearModal();
+              }}>
               <Text style={styles.buttonTitle}>Add transaction</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.button}
-              onPress={() =>
-                setModalVisible(!modalVisible)
-              }>
+              onPress={hideClearModal}>
               <Text style={styles.buttonTitle}>Close</Text>
             </TouchableOpacity>
 
@@ -218,8 +230,8 @@ const HomeScreen = ({ navigation }) => {
       </Modal>
 
       <View style={styles.addButtonView}>
-        <TouchableOpacity onPress={showStates}>
-          <Icon name="add-circle-outline" size={60} color="black" />
+        <TouchableOpacity onPress={() => setModalVisible(!modalVisible)}>
+          <Icon name="add-circle-outline" size={60} color="#3F8EFC" />
         </TouchableOpacity>
       </View>
 
@@ -230,6 +242,7 @@ const HomeScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
+    backgroundColor: 'transparent'
   },
   bannerView: {
     flex: 1,
@@ -239,7 +252,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 30,
     marginTop: 5,
-    backgroundColor: '#68a0cf',
+    backgroundColor: '#3F8EFC',
     shadowOffset: { width: 20, height: 20 },
     shadowColor: 'black',
     shadowOpacity: 1,
@@ -266,12 +279,11 @@ const styles = StyleSheet.create({
   balanceText: {
     fontSize: 18,
     fontWeight: '500',
+    color: "white"
   },
   contentView: {
     flex: 4,
     backgroundColor: 'transparent',
-    alignItems: "center",
-    justifyContent: "center",
   },
   modalView: {
     margin: 20,
@@ -320,6 +332,7 @@ const styles = StyleSheet.create({
     marginRight: 30,
     marginTop: 20,
     height: 48,
+    width: 150,
     borderRadius: 5,
     alignItems: "center",
     justifyContent: 'center'

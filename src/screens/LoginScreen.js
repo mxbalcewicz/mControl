@@ -11,7 +11,6 @@ import {
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import auth from '@react-native-firebase/auth';
-import admob, { BannerAd, BannerAdSize, TestIds } from '@react-native-firebase/admob';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const LoginScreen = ({ navigation }) => {
