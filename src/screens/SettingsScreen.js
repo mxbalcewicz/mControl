@@ -1,7 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity } from 'react-native';
+import React, {useState, useEffect} from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TextInput,
+  TouchableOpacity,
+} from 'react-native';
 import auth from '@react-native-firebase/auth';
-import { Picker } from '@react-native-picker/picker';
+import {Picker} from '@react-native-picker/picker';
 import firestore from '@react-native-firebase/firestore';
 
 const SettingsScreen = () => {
@@ -15,11 +21,12 @@ const SettingsScreen = () => {
     console.log(user);
     console.log(user.uid);
     firestore()
-      .collection('users').doc(user.uid)
+      .collection('users')
+      .doc(user.uid)
       .update({
         name: name,
         description: description,
-        currency: selectedCurrency
+        currency: selectedCurrency,
       })
       .then(() => {
         updateData();
@@ -37,25 +44,29 @@ const SettingsScreen = () => {
 
   const updateData = () => {
     const user = auth().currentUser;
-    firestore().collection('users').doc(user.uid).get()
-      .then(
-        documentSnapshot => {
-          setUserData(documentSnapshot.data());
-          setName(documentSnapshot.data()["name"]);
-          setDescription(documentSnapshot.data()["description"]);
-          setSelectedCurrency(documentSnapshot.data()["currency"]);
-        });
-  }
+    firestore()
+      .collection('users')
+      .doc(user.uid)
+      .get()
+      .then(documentSnapshot => {
+        setUserData(documentSnapshot.data());
+        setName(documentSnapshot.data()['name']);
+        setDescription(documentSnapshot.data()['description']);
+        setSelectedCurrency(documentSnapshot.data()['currency']);
+      });
+  };
 
-  useEffect(() => {updateData();}, []);
+  useEffect(() => {
+    updateData();
+  }, []);
 
   return (
     <View style={styles.container}>
       <View style={styles.inputWrapper}>
-        <View style={{flex: 1 }}>
+        <View style={{flex: 1}}>
           <Text>Name</Text>
         </View>
-        <View style={{flex: 3 }}>
+        <View style={{flex: 3}}>
           <TextInput
             style={styles.input}
             placeholder="Name"
@@ -66,13 +77,12 @@ const SettingsScreen = () => {
             autoCapitalize="none"
           />
         </View>
-
       </View>
       <View style={styles.inputWrapper}>
-        <View style={{flex: 1 }}>
+        <View style={{flex: 1}}>
           <Text>Description</Text>
         </View>
-        <View style={{flex: 3 }}>
+        <View style={{flex: 3}}>
           <TextInput
             style={styles.input}
             placeholder="Description"
@@ -93,14 +103,10 @@ const SettingsScreen = () => {
         <Picker.Item label="EUR" value="EUR" />
         <Picker.Item label="USD" value="USD" />
       </Picker>
-      <TouchableOpacity
-        style={styles.button}
-        onPress={updateUserData}>
+      <TouchableOpacity style={styles.button} onPress={updateUserData}>
         <Text style={styles.buttonTitle}>Update user data</Text>
       </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.button}
-        onPress={signOut}>
+      <TouchableOpacity style={styles.button} onPress={signOut}>
         <Text style={styles.buttonTitle}>Sign out!</Text>
       </TouchableOpacity>
     </View>
@@ -139,19 +145,19 @@ const styles = StyleSheet.create({
     height: 48,
     width: 150,
     borderRadius: 5,
-    alignItems: "center",
-    justifyContent: 'center'
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   buttonTitle: {
     color: 'white',
     fontSize: 16,
-    fontWeight: "bold"
+    fontWeight: 'bold',
   },
   inputWrapper: {
     flexDirection: 'row',
-    alignItems: "center",
+    alignItems: 'center',
     width: '75%',
-  }
+  },
 });
 
 export default SettingsScreen;

@@ -1,4 +1,4 @@
-import React, { Component, useState } from 'react';
+import React, {Component, useState} from 'react';
 import {
   StyleSheet,
   Text,
@@ -9,10 +9,10 @@ import {
 } from 'react-native';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
-const RegisterScreen = ({ navigation }) => {
+const RegisterScreen = ({navigation}) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -28,14 +28,15 @@ const RegisterScreen = ({ navigation }) => {
         console.log(user);
         console.log(user.uid);
         firestore()
-          .collection('users').doc(user.uid)
+          .collection('users')
+          .doc(user.uid)
           .set({
             name: name,
-            description: "",
-            currency: "PLN",
+            description: '',
+            currency: 'PLN',
             balance_plus: 0,
             balance_minus: 0,
-            balance_summary: 0
+            balance_summary: 0,
           })
           .then(() => {
             console.log('User data added to firestore!');
@@ -57,9 +58,8 @@ const RegisterScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <KeyboardAwareScrollView
-        style={{ flex: 1, width: '100%' }}
+        style={{flex: 1, width: '100%'}}
         keyboardShouldPersistTaps="always">
-
         <View style={styles.iconView}>
           <Icon name="attach-money" size={180} color="black" />
         </View>
@@ -92,9 +92,7 @@ const RegisterScreen = ({ navigation }) => {
           underlineColorAndroid="transparent"
           autoCapitalize="none"
         />
-        <TouchableOpacity
-          style={styles.button}
-          onPress={registerUser}>
+        <TouchableOpacity style={styles.button} onPress={registerUser}>
           <Text style={styles.buttonTitle}>Create account</Text>
         </TouchableOpacity>
         <View style={styles.footerView}>
@@ -169,7 +167,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flex: 1,
-}
+  },
 });
 
 export default RegisterScreen;

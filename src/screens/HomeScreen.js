@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {
   View,
   Text,
@@ -8,18 +8,23 @@ import {
   SafeAreaView,
   TextInput,
   FlatList,
-  Alert
+  Alert,
 } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
+import {Picker} from '@react-native-picker/picker';
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
-import { Avatar } from 'react-native-elements';
+import {Avatar} from 'react-native-elements';
 import Icon from 'react-native-vector-icons/Ionicons';
 import TransactionItem from '../components/TransactionItem';
-import { InterstitialAd, RewardedAd, BannerAd, TestIds, BannerAdSize } from '@react-native-firebase/admob';
+import {
+  InterstitialAd,
+  RewardedAd,
+  BannerAd,
+  TestIds,
+  BannerAdSize,
+} from '@react-native-firebase/admob';
 
-
-const HomeScreen = ({ navigation }) => {
+const HomeScreen = ({navigation}) => {
   //Home avatar, displayed name and currency states
   const [name, setName] = useState();
   const [email, setEmail] = useState();
@@ -30,13 +35,13 @@ const HomeScreen = ({ navigation }) => {
   //Modal input states
   const [transactionAmount, setTransactionAmount] = useState(null);
   const [transactionName, setTransactionName] = useState(null);
-  const [transactionType, setTransactionType] = useState("outgoing");
+  const [transactionType, setTransactionType] = useState('outgoing');
 
   // Collections of incoming and outgoing transactions
   const [transactions, setTransactions] = useState([]);
 
   // TestID for banner or GoogleAdmobID
-  const adUnitId = "ca-app-pub-3940256099942544/6300978111";
+  const adUnitId = 'ca-app-pub-3940256099942544/6300978111';
 
   //Sum of transactions states
   const [balanceIncoming, setBalanceIncoming] = useState();
@@ -45,53 +50,56 @@ const HomeScreen = ({ navigation }) => {
 
   const handleValueChange = (itemValue, itemIndex) => {
     setTransactionType(itemValue);
-  }
+  };
 
   const updateDataFromFirestore = async () => {
     setTransactions([]);
     let sumIncoming = 0;
     let sumOutgoing = 0;
     const user = auth().currentUser;
-    const emailPart = String(user.email).split("@")[0];
+    const emailPart = String(user.email).split('@')[0];
     setEmail(emailPart);
 
     //Displayed name in title
     const userCollection = firestore().collection('users');
-    const currentUserData = await userCollection.doc(user.uid).get().then(documentSnapshot => {
-      setName(documentSnapshot.data()["name"]);
-      setCurrency(documentSnapshot.data()["currency"]);
-    }
-    );
+    const currentUserData = await userCollection
+      .doc(user.uid)
+      .get()
+      .then(documentSnapshot => {
+        setName(documentSnapshot.data()['name']);
+        setCurrency(documentSnapshot.data()['currency']);
+      });
 
-    const transactionsCollection = firestore().collection('transactions').orderBy("timestamp", "desc");
+    const transactionsCollection = firestore()
+      .collection('transactions')
+      .orderBy('timestamp', 'desc');
     const transactionsData = await transactionsCollection.get();
 
     transactionsData.docs.forEach(item => {
-      if (item.data()["uid"] == user.uid) {
-        if (item.data()["type"] == "incoming") {
-          sumIncoming += item.data()["amount"];
+      if (item.data()['uid'] == user.uid) {
+        if (item.data()['type'] == 'incoming') {
+          sumIncoming += item.data()['amount'];
           var transactionData = item.data();
-          transactionData["id"] = item.id;
+          transactionData['id'] = item.id;
           setTransactions(transactions => [...transactions, transactionData]);
         } else {
-          sumOutgoing += item.data()["amount"];
+          sumOutgoing += item.data()['amount'];
           var transactionData = item.data();
-          transactionData["id"] = item.id;
+          transactionData['id'] = item.id;
           setTransactions(transactions => [...transactions, transactionData]);
         }
       }
-    })
+    });
     setBalanceIncoming(sumIncoming);
     setBalanceOutgoing(sumOutgoing);
     setBalanceSummary(sumIncoming - sumOutgoing);
-
   };
 
   const hideClearModal = () => {
     setModalVisible(!modalVisible);
     setTransactionAmount(null);
     setTransactionName(null);
-  }
+  };
 
   const addNewTransaction = () => {
     const user = auth().currentUser;
@@ -99,21 +107,24 @@ const HomeScreen = ({ navigation }) => {
 
     if (transactionAmount == null) {
       Alert.alert('You need to provide the amount!');
-    }
-    else {
-      firestore().collection('transactions').doc().set(
-        {
+    } else {
+      firestore()
+        .collection('transactions')
+        .doc()
+        .set({
           amount: parseInt(transactionAmount),
           name: transactionName,
           uid: user.uid,
           timestamp: timestamp,
-          type: transactionType
-        }
-      ).then(updateDataFromFirestore);
+          type: transactionType,
+        })
+        .then(updateDataFromFirestore);
     }
   };
 
-  useEffect(() => { updateDataFromFirestore(); }, []);
+  useEffect(() => {
+    updateDataFromFirestore();
+  }, []);
 
   return (
     <View style={styles.wrapper}>
@@ -122,11 +133,14 @@ const HomeScreen = ({ navigation }) => {
           <Avatar
             rounded
             source={{
-              uri:
-                'https://robohash.org/' + email,
+              uri: 'https://robohash.org/' + email,
             }}
             size={130}
-            avatarStyle={{ borderWidth: 2, borderColor: 'white', borderTopLeftRadius: 1 }}
+            avatarStyle={{
+              borderWidth: 2,
+              borderColor: 'white',
+              borderTopLeftRadius: 1,
+            }}
           />
         </View>
 
@@ -135,16 +149,33 @@ const HomeScreen = ({ navigation }) => {
             <Text style={styles.title}>{name}'s finances:</Text>
           </View>
           <View style={styles.balanceWrapper}>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: "center" }}>
-              <View style={{ flex: 1, alignItems: 'flex-start', paddingLeft: 20 }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                flexWrap: 'wrap',
+                alignItems: 'center',
+              }}>
+              <View
+                style={{flex: 1, alignItems: 'flex-start', paddingLeft: 20}}>
                 <Text style={styles.balanceText}>Incoming</Text>
                 <Text style={styles.balanceText}>Outgoing</Text>
                 <Text style={styles.balanceText}>Summary</Text>
               </View>
-              <View style={{ flex: 2, alignItems: "flex-start", alignItems: "center" }}>
-                <Text style={styles.balanceText}>{balanceIncoming} {currency}</Text>
-                <Text style={styles.balanceText}>{balanceOutgoing} {currency}</Text>
-                <Text style={styles.balanceText}>{balanceSummary} {currency}</Text>
+              <View
+                style={{
+                  flex: 2,
+                  alignItems: 'flex-start',
+                  alignItems: 'center',
+                }}>
+                <Text style={styles.balanceText}>
+                  {balanceIncoming} {currency}
+                </Text>
+                <Text style={styles.balanceText}>
+                  {balanceOutgoing} {currency}
+                </Text>
+                <Text style={styles.balanceText}>
+                  {balanceSummary} {currency}
+                </Text>
               </View>
             </View>
           </View>
@@ -154,19 +185,36 @@ const HomeScreen = ({ navigation }) => {
       <SafeAreaView style={styles.contentView}>
         <FlatList
           data={transactions}
-          renderItem={(data) => {
-            return (data.index % 10 == 0) ? <View>
-              <TransactionItem id={data["item"]["id"]} name={data["item"]["name"]} amount={data["item"]["amount"]} currency={currency} transactionType={data["item"]["type"]} updateFn={() => updateDataFromFirestore()} />
-              <BannerAd
-                unitId={adUnitId}
-                size={BannerAdSize.FULL_BANNER}
-                requestOptions={{
-                  requestNonPersonalizedAdsOnly: true,
-                }}
-              /></View> :
-              <TransactionItem id={data["item"]["id"]} name={data["item"]["name"]} amount={data["item"]["amount"]} currency={currency} transactionType={data["item"]["type"]} updateFn={() => updateDataFromFirestore()} />
-            }
-          }
+          renderItem={data => {
+            return data.index % 10 == 0 ? (
+              <View>
+                <TransactionItem
+                  id={data['item']['id']}
+                  name={data['item']['name']}
+                  amount={data['item']['amount']}
+                  currency={currency}
+                  transactionType={data['item']['type']}
+                  updateFn={() => updateDataFromFirestore()}
+                />
+                <BannerAd
+                  unitId={adUnitId}
+                  size={BannerAdSize.FULL_BANNER}
+                  requestOptions={{
+                    requestNonPersonalizedAdsOnly: true,
+                  }}
+                />
+              </View>
+            ) : (
+              <TransactionItem
+                id={data['item']['id']}
+                name={data['item']['name']}
+                amount={data['item']['amount']}
+                currency={currency}
+                transactionType={data['item']['type']}
+                updateFn={() => updateDataFromFirestore()}
+              />
+            );
+          }}
         />
       </SafeAreaView>
       <Modal
@@ -177,12 +225,12 @@ const HomeScreen = ({ navigation }) => {
           setModalVisible(!modalVisible);
           setName(null);
           setTransactionAmount(null);
-        }
-        }
-      >
+        }}>
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
-            <Text style={styles.modalText}>Add new transaction to your history</Text>
+            <Text style={styles.modalText}>
+              Add new transaction to your history
+            </Text>
             <TextInput
               style={styles.input}
               placeholder="Transaction name"
@@ -195,7 +243,7 @@ const HomeScreen = ({ navigation }) => {
             <TextInput
               style={styles.input}
               placeholder="Amount"
-              keyboardType='numeric'
+              keyboardType="numeric"
               placeholderTextColor="#aaaaaa"
               onChangeText={text => setTransactionAmount(text)}
               value={transactionAmount}
@@ -219,12 +267,9 @@ const HomeScreen = ({ navigation }) => {
               <Text style={styles.buttonTitle}>Add transaction</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.button}
-              onPress={hideClearModal}>
+            <TouchableOpacity style={styles.button} onPress={hideClearModal}>
               <Text style={styles.buttonTitle}>Close</Text>
             </TouchableOpacity>
-
           </View>
         </View>
       </Modal>
@@ -234,7 +279,6 @@ const HomeScreen = ({ navigation }) => {
           <Icon name="add-circle-outline" size={60} color="#3F8EFC" />
         </TouchableOpacity>
       </View>
-
     </View>
   );
 };
@@ -242,44 +286,44 @@ const HomeScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
-    backgroundColor: 'transparent'
+    backgroundColor: 'transparent',
   },
   bannerView: {
     flex: 1,
     padding: 10,
     margin: 5,
     flexDirection: 'row',
-    alignItems: "center",
+    alignItems: 'center',
     borderRadius: 30,
     marginTop: 5,
     backgroundColor: '#3F8EFC',
-    shadowOffset: { width: 20, height: 20 },
+    shadowOffset: {width: 20, height: 20},
     shadowColor: 'black',
     shadowOpacity: 1,
     elevation: 15,
   },
   titleWrapper: {
     flex: 1,
-    textAlign: "center",
-    justifyContent: "center",
-    alignSelf: 'stretch'
+    textAlign: 'center',
+    justifyContent: 'center',
+    alignSelf: 'stretch',
   },
   title: {
     textAlign: 'center',
     alignSelf: 'center',
     fontSize: 19,
     fontWeight: '600',
-    color: "white"
+    color: 'white',
   },
   balanceWrapper: {
     flex: 3,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   balanceText: {
     fontSize: 16,
     fontWeight: '500',
-    color: "white"
+    color: 'white',
   },
   contentView: {
     flex: 4,
@@ -334,13 +378,13 @@ const styles = StyleSheet.create({
     height: 48,
     width: 150,
     borderRadius: 5,
-    alignItems: "center",
-    justifyContent: 'center'
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   buttonTitle: {
     color: 'white',
     fontSize: 16,
-    fontWeight: "bold"
+    fontWeight: 'bold',
   },
 });
 
