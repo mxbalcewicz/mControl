@@ -1,7 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import {
-  StyleSheet,
-} from 'react-native';
+import React, {useState, useEffect} from 'react';
+import {StyleSheet} from 'react-native';
 import auth from '@react-native-firebase/auth';
 import UnauthenticatedScreen from '../screens/UnauthenticatedScreen';
 import AuthenticatedScreen from '../screens/AuthenticatedScreen';
@@ -21,15 +19,11 @@ export default App = () => {
   }, []);
 
   if (!user) {
-    return (
-      <UnauthenticatedScreen />
-    );
+    return <UnauthenticatedScreen />;
   }
 
-  return (
-    <AuthenticatedScreen />
-  );
-}
+  return <AuthenticatedScreen />;
+};
 
 const styles = StyleSheet.create({
   container: {
